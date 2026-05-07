@@ -25,3 +25,27 @@ dead_ends = set()    # For solving (Blue dots)
 def init_gl():
     glClearColor(0.0, 0.0, 0.0, 1.0)
     gluOrtho2D(0, WINDOW_WIDTH, 0, WINDOW_HEIGHT)
+def draw_maze():
+    glColor3f(1.0, 1.0, 1.0) # White walls
+    glLineWidth(2)
+    glBegin(GL_LINES)
+    # Draw North Walls
+    for r in range(R + 1):
+        for c in range(C):
+            if northWall[r][c] == 1:
+                glVertex2f(c * CELL_SIZE, r * CELL_SIZE)
+                glVertex2f((c + 1) * CELL_SIZE, r * CELL_SIZE)
+    # Draw East Walls
+    for r in range(R):
+        for c in range(C + 1):
+            if eastWall[r][c] == 1:
+                glVertex2f(c * CELL_SIZE, r * CELL_SIZE)
+                glVertex2f(c * CELL_SIZE, (r + 1) * CELL_SIZE)
+    glEnd()
+
+def draw_dot(r, c, color):
+    glColor3f(*color)
+    glPointSize(10)
+    glBegin(GL_POINTS)
+    glVertex2f(c * CELL_SIZE + CELL_SIZE/2, r * CELL_SIZE + CELL_SIZE/2)
+    glEnd()
