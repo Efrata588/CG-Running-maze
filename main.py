@@ -49,3 +49,57 @@ def draw_dot(r, c, color):
     glBegin(GL_POINTS)
     glVertex2f(c * CELL_SIZE + CELL_SIZE/2, r * CELL_SIZE + CELL_SIZE/2)
     glEnd()
+
+
+
+def generate_maze():
+    stack = [(0, 0)]
+    visited[0][0] = True
+    
+    while stack:
+        curr_r, curr_c = stack[-1]
+        neighbors = []
+
+        # Check neighbors: (dr, dc, wall_type, wall_pos)
+        # Directions: Up, Down, Left, Right
+        dirs = [(1, 0, 'N', (curr_r + 1, curr_c)), 
+                (-1, 0, 'N', (curr_r, curr_c)),
+                (0, -1, 'E', (curr_r, curr_c)),
+                (0, 1, 'E', (curr_r, curr_c + 1))]
+
+        for dr, dc, w_type, (wr, wc) in dirs:
+            nr, nc = curr_r + dr, curr_c + dc
+            if 0 <= nr < R and 0 <= nc < C and not visited[nr][nc]:
+                neighbors.append((nr, nc, w_type, (wr, wc)))
+
+        if neighbors:
+            nr, nc, w_type, (wr, wc) = random.choice(neighbors)
+            # "Eat" the wall
+            if w_type == 'N': northWall[wr][wc] = 0
+            else: eastWall[wr][wc] = 0
+            
+            # Optional: 1 in 20 chance to eat an extra wall (Bonus Challenge)
+            if random.random() < 0.05:
+                rand_r, rand_c = random.randint(1, R-1), random.randint(1, C-1)
+                northWall[rand_r][rand_c] = 0
+
+            visited[nr][nc] = True
+            stack.append((nr, nc))
+            
+            # Visualization sync
+            render_frame()
+        else:
+            stack.pop()
+
+def render_frame():
+    glClear(GL_COLOR_BUFFER_BIT)
+
+    draw_maze()
+
+    for r, c in path_stack:
+        draw_dot(r, c, (1, 0, 0))
+
+    for r, c in dead_ends:
+        draw_dot(r, c, (0, 0, 1))
+
+    pygame.display.flip()
