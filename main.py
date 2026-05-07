@@ -22,3 +22,6 @@ visited = [[False for _ in range(C)] for _ in range(R)]
 path_stack = []      # For solving (Red dots)
 dead_ends = set()    # For solving (Blue dots)
 
+def init_gl():
+    glClearColor(0.0, 0.0, 0.0, 1.0)
+    gluOrtho2D(0, WINDOW_WIDTH, 0, WINDOW_HEIGHT)
