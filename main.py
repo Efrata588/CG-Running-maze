@@ -22,25 +22,32 @@ visited = [[False for _ in range(C)] for _ in range(R)]
 path_stack = []      # For solving (Red dots)
 dead_ends = set()    # For solving (Blue dots)
 
+# Mouse position
+mouse_pos = None
+
 def init_gl():
     glClearColor(0.0, 0.0, 0.0, 1.0)
     gluOrtho2D(0, WINDOW_WIDTH, 0, WINDOW_HEIGHT)
+
 def draw_maze():
     glColor3f(1.0, 1.0, 1.0) # White walls
     glLineWidth(2)
     glBegin(GL_LINES)
+
     # Draw North Walls
     for r in range(R + 1):
         for c in range(C):
             if northWall[r][c] == 1:
                 glVertex2f(c * CELL_SIZE, r * CELL_SIZE)
                 glVertex2f((c + 1) * CELL_SIZE, r * CELL_SIZE)
+
     # Draw East Walls
     for r in range(R):
         for c in range(C + 1):
             if eastWall[r][c] == 1:
                 glVertex2f(c * CELL_SIZE, r * CELL_SIZE)
                 glVertex2f(c * CELL_SIZE, (r + 1) * CELL_SIZE)
+
     glEnd()
 
 def draw_dot(r, c, color):
@@ -50,44 +57,51 @@ def draw_dot(r, c, color):
     glVertex2f(c * CELL_SIZE + CELL_SIZE/2, r * CELL_SIZE + CELL_SIZE/2)
     glEnd()
 
-
-
 def generate_maze():
+    global mouse_pos
+
     stack = [(0, 0)]
     visited[0][0] = True
-    
+
     while stack:
         curr_r, curr_c = stack[-1]
+
+        # Update mouse position
+        mouse_pos = (curr_r, curr_c)
+
         neighbors = []
 
         # Check neighbors: (dr, dc, wall_type, wall_pos)
         # Directions: Up, Down, Left, Right
-        dirs = [(1, 0, 'N', (curr_r + 1, curr_c)), 
-                (-1, 0, 'N', (curr_r, curr_c)),
-                (0, -1, 'E', (curr_r, curr_c)),
-                (0, 1, 'E', (curr_r, curr_c + 1))]
+        dirs = [
+            (1, 0, 'N', (curr_r + 1, curr_c)),
+            (-1, 0, 'N', (curr_r, curr_c)),
+            (0, -1, 'E', (curr_r, curr_c)),
+            (0, 1, 'E', (curr_r, curr_c + 1))
+        ]
 
         for dr, dc, w_type, (wr, wc) in dirs:
             nr, nc = curr_r + dr, curr_c + dc
+
             if 0 <= nr < R and 0 <= nc < C and not visited[nr][nc]:
                 neighbors.append((nr, nc, w_type, (wr, wc)))
 
         if neighbors:
             nr, nc, w_type, (wr, wc) = random.choice(neighbors)
+
             # "Eat" the wall
-            if w_type == 'N': northWall[wr][wc] = 0
-            else: eastWall[wr][wc] = 0
-            
-            # Optional: 1 in 20 chance to eat an extra wall (Bonus Challenge)
-            if random.random() < 0.05:
-                rand_r, rand_c = random.randint(1, R-1), random.randint(1, C-1)
-                northWall[rand_r][rand_c] = 0
+            if w_type == 'N':
+                northWall[wr][wc] = 0
+            else:
+                eastWall[wr][wc] = 0
 
             visited[nr][nc] = True
             stack.append((nr, nc))
-            
+
             # Visualization sync
             render_frame()
+            time.sleep(0.05)
+
         else:
             stack.pop()
 
@@ -96,6 +110,10 @@ def render_frame():
 
     draw_maze()
 
+    # Draw green mouse
+    if mouse_pos:
+        draw_dot(mouse_pos[0], mouse_pos[1], (0, 1, 0))
+
     for r, c in path_stack:
         draw_dot(r, c, (1, 0, 0))
 
@@ -103,7 +121,6 @@ def render_frame():
         draw_dot(r, c, (0, 0, 1))
 
     pygame.display.flip()
-
 
 def solve_maze(start, end):
     stack = [start]
