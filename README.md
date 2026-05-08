@@ -7,6 +7,7 @@ This project generates and solves a 2D maze using Python, Pygame, and PyOpenGL.
 - White lines → maze walls
 - Red dots → current solving path
 - Blue dots → dead ends
+- Green dot -> mouse
 
 ---
 
